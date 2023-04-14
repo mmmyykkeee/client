@@ -241,7 +241,7 @@ function SignUp() {
   required
   style={{ border: formErrors.password ? '1px solid red' : '1px solid black' }}
 />
-<ul style={{ color: 'red' }}>
+<ul style={{ color: 'green' }}>
   <li>One uppercase letter</li>
   <li>One lowercase letter</li>
   <li>One number</li>

@@ -71,3 +71,8 @@ button[type="submit"]:active {
   background-color: #ccc; /* gray */
   cursor: not-allowed;
 }
+
+
+.criteria-met{
+  text-transform: uppercase;
+}
