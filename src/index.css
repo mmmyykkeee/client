@@ -76,3 +76,7 @@ button[type="submit"]:active {
 .criteria-met{
 color: green;
 }
+
+/* .error{
+  border: 1px solid red;
+} */
