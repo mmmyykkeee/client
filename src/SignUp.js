@@ -278,6 +278,7 @@ function SignUp() {
       paddingRight: "40px", // Add some space for the button
     }}
   />
+  
   <button
     type="button"
     className="btn btn-outline-none password-toggle-button"

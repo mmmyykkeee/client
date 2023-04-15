@@ -1,117 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Button, Form } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-function SignIn() {
+
+const SignIn = ({ setLoggedInUser }) => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [currentUser, setCurrentUser] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      try {
-        const response = await fetch('/api/currentUser', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const data = await response.json();
-        setCurrentUser(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getCurrentUser();
-  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const response = await fetch('/signin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      setMessage('Sign in successful');
-      setTimeout(() => {
-        setMessage('');
-        window.location.href = "/";
-      }, 1000);
-    } else {
-      setMessage('Sign in failed, Check your Username or Password');
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post('/signin', { username, password });
+      localStorage.setItem('token', response.data.token);
+      setLoggedInUser(username);
+      setUsername('');
+      setPassword('');
+      setErrorMessage('');
+      navigate.push('/');
+    } catch (error) {
+      console.log(error.response.data);
+      setErrorMessage(error.response.data);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setCurrentUser(null);
-    setMessage('Logged out');
-    setTimeout(() => {
-      setMessage('');
-      window.location.href = "/";
-    }, 3000);
-  };
-
-  const isLoggedIn = () => {
-    const token = localStorage.getItem('token');
-    return !!token;
-  }
-
   return (
-    <div className='containers'>
-      {currentUser ? (
-        <div>
-          <p>Welcome, {currentUser.username}!</p>
-          <button className='btn' onClick={handleLogout}>Logout</button>
-        </div>
-      ) : (
-        <div>
-          <h1>Sign In</h1>
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            <br />
+    <div className="container mt-3">
+      <h2>Sign In</h2>
+      <Form onSubmit={handleSubmit}>
+        <Form.Group controlId="username">
+          <Form.Label>Username</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+          />
+        </Form.Group>
 
-            <label htmlFor="password">Password</label>
-            <div className='password-input'>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              {showPassword ? (
-                <FaEyeSlash onClick={() => setShowPassword(false)} />
-              ) : (
-                <FaEye onClick={() => setShowPassword(true)} />
-              )}
-            </div>
-            <br />
-            <button type="submit">Sign In</button>
-          </form>
-          {message && (
-            <p style={{ color: message.includes('successful') ? 'green' : 'red' }}>
-              {message}
-            </p>
-          )}
-        </div>
-      )}
+        <Form.Group controlId="password">
+          <Form.Label>Password</Form.Label>
+         <div style={{ position: "relative" }}>
+          <Form.Control
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+           <button
+    type="button"
+    className="btn btn-outline-none password-toggle-button"
+    onClick={() => setShowPassword(!showPassword)}
+    aria-label={showPassword ? "Hide password" : "Show password"}
+    style={{
+      position: "absolute",
+      top: "50%",
+      right: "10px",
+      transform: "translateY(-50%)",
+    }}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </button>
+          </div>
+        </Form.Group>
+
+        {errorMessage && <div className="text-danger">{errorMessage}</div>}
+
+        <Button variant="primary" type="submit">
+          Sign In
+        </Button>
+      </Form>
     </div>
   );
-}
+};
 
 export default SignIn;
