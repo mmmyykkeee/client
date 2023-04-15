@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ function SignUp() {
   const [formErrors, setFormErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [users, setUsers] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const getUsers = async () => {
@@ -159,114 +161,151 @@ function SignUp() {
     const phoneNumberExists = users.some(
       (user) => user.phoneNumber === formData.phoneNumber
     );
-
     if (emailExists) {
-      errors.email = 'This email is already taken';
-    }
+        errors = { ...errors, email: 'Email already exists' };
+        }
+        if (usernameExists) {
+            errors = { ...errors, username: 'Username already exists' };
+          }
+          
+          if (phoneNumberExists) {
+            errors = {
+              ...errors,
+              phoneNumber: 'Phone number already exists',
+            };
+          }
+          
+          if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+          } else {
+            try {
+              const response = await fetch('/signup', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+              });
+              const data = await response.json();
+          
+              if (response.ok) {
+                setSuccessMessage("Sign up successful");
+                setTimeout(() => {
+                  setSuccessMessage("");
+                  window.location.href = "/Sign-In";
+                }, 3000);
+             
+              } else {
+                setFormErrors({ ...formErrors, submit: data.message });
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          }
+        };
 
-    if (usernameExists) {
-      errors.username = 'This username is already taken';
-    }
-
-    if (phoneNumberExists) {
-      errors.phoneNumber = 'This phone number is already taken';
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-
-    // Make API request to sign up user
-    try {
-      const response = await fetch('/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        setSuccessMessage('Sign up Successful !. Redirecting...');
-        // redirect to sign in page
-        window.location.href = '/Sign-In';
-      } else {
-        const data = await response.json();
-        setFormErrors({
-          ...errors,
-          [data.error]: data.message,
-        });
-        setSuccessMessage('');
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  return (
-    <div className='container'>
-      <h1>Sign Up</h1>
-      <form onSubmit={handleSubmit}>
+        const handlePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+        };
+        
+        return (
+        <div className="signup-container container">
+        <form onSubmit={handleSubmit}>
+        <h1>Create an account</h1>
         <label htmlFor="email">Email</label>
         <input
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          required
-          style={{ border: formErrors.email ? '1px solid red' : '1px solid black' }}
-        />
-        {formErrors.email && <p style={{ color: 'red' }}>{formErrors.email}</p>}
+               type="email"
+               id="email"
+               name="email"
+               value={formData.email}
+               onChange={handleInputChange}
+               required
+             />
+        {formErrors.email && (
+  <p className="error" style={{color: 'red'}}>
+    {formErrors.email}
+  </p>
+)}
+        <label htmlFor="password">Password</label>
+        <div className="password-input-container">
+        
+            <input
+            type={showPassword ? 'text' : 'password'}
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            required
 
+            />
+            
+            {showPassword ? (
+            <FaEyeSlash
+                       className="password-visibility-icon mx-2"
+                       onClick={handlePasswordVisibility}
+                     />
+            ) : (
+            <FaEye
+                       className="password-visibility-icon mx-2"
+                       onClick={handlePasswordVisibility}
+                     />
+            )}
+        
+        </div>
+        <p className="password-criteria-header">Password Criteria</p>
+        <ul id="password-criteria" style={{color: 'red'}}>
+        <li id="password-criteria-upper">At least one uppercase letter</li>
+        <li id="password-criteria-lower">At least one lowercase letter</li>
+        <li id="password-criteria-number">At least one number</li>
+        <li id="password-criteria-special">
+        At least one special character
+        </li>
+        <li id="password-criteria-length">At least 8 characters long</li>
+        </ul>
+        {formErrors.password && (
+  <p className="error" style={{color: 'red'}}>
+    {formErrors.password}
+  </p>
+)}
         <label htmlFor="username">Username</label>
-        <input    type="text"
-    id="username"
-    name="username"
-    value={formData.username}
-    onChange={handleInputChange}
-    required
-    style={{ border: formErrors.username ? '1px solid red' : '1px solid black' }}
-  />
-  {formErrors.username && <p style={{ color: 'red' }}>{formErrors.username}</p>}
-
-  <label htmlFor="password">Password</label>
-<input
-  type="password"
-  id="password"
-  name="password"
-  value={formData.password}
-  onChange={handleInputChange}
-  required
-  style={{ border: formErrors.password ? '1px solid red' : '1px solid black' }}
-/>
-<ul style={{ color: 'green' }}>
-  <li>One uppercase letter</li>
-  <li>One lowercase letter</li>
-  <li>One number</li>
-  <li>One special character</li>
-  <li>Minimum of 8 characters in length</li>
-</ul>
-{formErrors.password && <p style={{ color: 'red' }}>{formErrors.password}</p>}
-
-  <label htmlFor="phoneNumber">Phone Number</label>
-  <input
-    type="tel"
-    id="phoneNumber"
-    name="phoneNumber"
-    value={formData.phoneNumber}
-    onChange={handleInputChange}
-    required
-    style={{ border: formErrors.phoneNumber ? '1px solid red' : '1px solid black' }}
-  />
-  {formErrors.phoneNumber && <p style={{ color: 'red' }}>{formErrors.phoneNumber}</p>}
-
-  <button type="submit">Sign Up</button>
-</form>
-{successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-
-</div>
-);
-}
-export default SignUp;
+        <input
+               type="text"
+               id="username"
+               name="username"
+               value={formData.username}
+               onChange={handleInputChange}
+               required
+             />
+        {formErrors.username && (
+  <p className="error" style={{color: 'red'}}>
+    {formErrors.username}
+  </p>
+)}
+        <label htmlFor="phoneNumber">Phone Number</label>
+        <input
+               type="tel"
+               id="phoneNumber"
+               name="phoneNumber"
+               value={formData.phoneNumber}
+               onChange={handleInputChange}
+               required
+             />
+     {formErrors.phoneNumber && (
+  <p className="error" style={{color: 'red'}}>
+    {formErrors.phoneNumber}
+  </p>
+)}
+        {formErrors.submit && (
+  <p className="error" style={{color: 'red'}}>
+    {formErrors.submit}
+  </p>
+)}
+        {successMessage && <p className="success
+        ">{successMessage}</p>}
+        <button type="submit">Sign Up</button>
+        
+        </form>
+        </div>
+        );
+        }
+        export default SignUp;          
