@@ -13,6 +13,7 @@ function SignUp() {
   const [users, setUsers] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
 
+
   useEffect(() => {
     const getUsers = async () => {
       try {
@@ -139,7 +140,7 @@ function SignUp() {
       } else {
         setFormErrors({
           ...formErrors,
-          password: "Please enter a password that meets the criteria",
+          password: "Please enter a password that meets all the criteria",
         });
       }
 
@@ -213,6 +214,21 @@ function SignUp() {
   return (
     <div className="container">
       <h1>Sign Up</h1>
+      <label htmlFor="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          value={formData.username}
+          onChange={handleInputChange}
+          required
+          style={{
+            border: formErrors.username ? "1px solid red" : "1px solid black",
+          }}
+        />
+        {formErrors.username && (
+          <p style={{ color: "red" }}>{formErrors.username}</p>
+        )}
       <form onSubmit={handleSubmit}>
         <label htmlFor="email">Email</label>
         <input
@@ -228,51 +244,9 @@ function SignUp() {
         />
         {formErrors.email && <p style={{ color: "red" }}>{formErrors.email}</p>}
 
-        <label htmlFor="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          value={formData.username}
-          onChange={handleInputChange}
-          required
-          style={{
-            border: formErrors.username ? "1px solid red" : "1px solid black",
-          }}
-        />
-        {formErrors.username && (
-          <p style={{ color: "red" }}>{formErrors.username}</p>
-        )}
+     
 
-        <label htmlFor="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          value={formData.password}
-          onChange={handleInputChange}
-          required
-          style={{
-            border: formErrors.password ? "1px solid red" : "1px solid black",
-          }}
-        />
-       {showPassword ? (
-                <FaEyeSlash onClick={() => setShowPassword(false)} />
-              ) : (
-                <FaEye onClick={() => setShowPassword(true)} />
-              )}
-        <p className="password-criteria-header">Password Criteria</p>
-        <ul id="password-criteria" style={{ color: "red" }}>
-          <li id="password-criteria-upper">At least one uppercase letter</li>
-          <li id="password-criteria-lower">At least one lowercase letter</li>
-          <li id="password-criteria-number">At least one number</li>
-          <li id="password-criteria-special">At least one special character</li>
-          <li id="password-criteria-length">At least 8 characters long</li>
-        </ul>
-        {formErrors.password && (
-          <p style={{ color: "red" }}>{formErrors.password}</p>
-        )}
-
+        
         <label htmlFor="phoneNumber">Phone Number</label>
         <input
           type="tel"
@@ -290,6 +264,48 @@ function SignUp() {
         {formErrors.phoneNumber && (
           <p style={{ color: "red" }}>{formErrors.phoneNumber}</p>
         )}
+        <label htmlFor="password">Password</label>
+        <div style={{ position: "relative" }}>
+  <input
+    type={showPassword ? "text" : "password"}
+    id="password"
+    name="password"
+    value={formData.password}
+    onChange={handleInputChange}
+    required
+    style={{
+      border: formErrors.password ? "1px solid red" : "1px solid black",
+      paddingRight: "40px", // Add some space for the button
+    }}
+  />
+  <button
+    type="button"
+    className="btn btn-outline-none password-toggle-button"
+    onClick={() => setShowPassword(!showPassword)}
+    aria-label={showPassword ? "Hide password" : "Show password"}
+    style={{
+      position: "absolute",
+      top: "50%",
+      right: "10px",
+      transform: "translateY(-50%)",
+    }}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </button>
+</div>
+
+        <p className="password-criteria-header">Password Criteria</p>
+        <ul id="password-criteria" style={{ color: "red" }}>
+          <li id="password-criteria-upper">At least one uppercase letter</li>
+          <li id="password-criteria-lower">At least one lowercase letter</li>
+          <li id="password-criteria-number">At least one number</li>
+          <li id="password-criteria-special">At least one special character</li>
+          <li id="password-criteria-length">At least 8 characters long</li>
+        </ul>
+        {formErrors.password && (
+          <p style={{ color: "red" }}>{formErrors.password}</p>
+        )}
+
 
         <button type="submit">Sign Up</button>
       </form>
