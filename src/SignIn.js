@@ -1,82 +1,75 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Button, Form } from 'react-bootstrap';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-
-const SignIn = ({ setLoggedInUser }) => {
-  const navigate = useNavigate();
+function SignIn() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setLoading(true);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
     try {
-      const response = await axios.post('/signin', { username, password });
-      localStorage.setItem('token', response.data.token);
-      setLoggedInUser(username);
-      setUsername('');
-      setPassword('');
-      setErrorMessage('');
-      navigate.push('/');
+      const response = await fetch('/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setError('');
+        setSuccessMessage('Sign in successful ... Redirecting');
+        setTimeout(() => {
+          navigate('/App/');
+        }, 3000);
+      } else {
+        setError(data.message);
+      }
     } catch (error) {
-      console.log(error.response.data);
-      setErrorMessage(error.response.data);
+      console.error(error);
+      setError('Something went wrong');
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="container mt-3">
-      <h2>Sign In</h2>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="username">
-          <Form.Label>Username</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="password">
-          <Form.Label>Password</Form.Label>
-         <div style={{ position: "relative" }}>
-          <Form.Control
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-           <button
-    type="button"
-    className="btn btn-outline-none password-toggle-button"
-    onClick={() => setShowPassword(!showPassword)}
-    aria-label={showPassword ? "Hide password" : "Show password"}
-    style={{
-      position: "absolute",
-      top: "50%",
-      right: "10px",
-      transform: "translateY(-50%)",
-    }}
-  >
-    {showPassword ? <FaEyeSlash /> : <FaEye />}
-  </button>
-          </div>
-        </Form.Group>
-
-        {errorMessage && <div className="text-danger">{errorMessage}</div>}
-
-        <Button variant="primary" type="submit">
-          Sign In
-        </Button>
-      </Form>
+    <div className='container'>
+      <form onSubmit={handleSubmit}>
+        <h2>Sign In</h2>
+       
+        <label htmlFor="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          required
+        />
+        <label htmlFor="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
+        {successMessage && <p className="text-success">{successMessage}</p>}
+        {error && <p className='text-danger'>{error}</p>}
+      </form>
     </div>
   );
-};
+}
 
 export default SignIn;

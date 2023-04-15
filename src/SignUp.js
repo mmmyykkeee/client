@@ -155,9 +155,9 @@ function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     let errors = {};
-
+  
     // Check for existing email, username, and phone number
     const emailExists = users.some((user) => user.email === formData.email);
     const usernameExists = users.some(
@@ -166,24 +166,34 @@ function SignUp() {
     const phoneNumberExists = users.some(
       (user) => user.phoneNumber === formData.phoneNumber
     );
-
+  
     if (emailExists) {
       errors.email = "This email is already taken";
     }
-
+  
     if (usernameExists) {
       errors.username = "This username is already taken";
     }
-
+  
     if (phoneNumberExists) {
       errors.phoneNumber = "This phone number is already taken";
     }
-
+  
+    // Check if email is valid
+    if (
+      formData.email &&
+      !/^[^\s@]+@[gmail|yahoo]+\.[co]{2}[m]{1}$/.test(
+        formData.email.toLowerCase()
+      )
+    ) {
+      errors.email = "Please enter a valid email address";
+    }
+  
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-
+  
     // Make API request to sign up user
     try {
       const response = await fetch("/signup", {
@@ -193,23 +203,20 @@ function SignUp() {
         },
         body: JSON.stringify(formData),
       });
-
+  
       if (response.ok) {
         setSuccessMessage("Sign up Successful !. Redirecting...");
         // redirect to sign in page
         window.location.href = "/Sign-In";
       } else {
         const data = await response.json();
-        setFormErrors({
-          ...errors,
-          [data.error]: data.message,
-        });
-        setSuccessMessage("");
+        setFormErrors(data.errors);
       }
     } catch (error) {
       console.log(error);
     }
   };
+  
 
   return (
     <div className="container">
